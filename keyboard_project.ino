@@ -1,5 +1,6 @@
 #include "Keypad.h"
 String entered = "";
+char lastchar='\0';
 
 const int rows = 3;
 const int cols = 3;
@@ -32,18 +33,21 @@ void tryappend(char character){
 
 void readKeypad(Keypad k){
   char key = k.getKey();
-  switch(key){
-    case '#':
-      clearstring();
-      break;
-    case '*':
-      enterpassword();
-      break;
-    case '\0': //Null character, no key was pressed
-      break; //do nothing 
-    default:
-      tryappend(key);
+  if (lastchar=='\0'){
+    switch(key){
+      case '#':
+        clearstring();
+        break;
+      case '*':
+        enterpassword();
+        break;
+      case '\0': //Null character, no key was pressed
+        break; //do nothing 
+      default:
+        forceappend(key);
+    }
   }
+  lastchar = key;
 }
 
 void setup() {
