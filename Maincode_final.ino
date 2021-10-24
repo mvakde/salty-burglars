@@ -52,8 +52,7 @@ void setup() {
 
 //ISRs
 void PIRisr(){
-  armed = false;
-  burglar = true;
+  if(armed) burglar = true;
 }
   
 void TEMPisr(){
@@ -167,7 +166,8 @@ void readKeypad(Keypad k){
   
 //Main loop
 void loop() {
-  if(burglar && !armed) enter_pwd();
+  if(burglar && armed) enter_pwd();
   readKeypad(keypad1);
-  if(pwd_chng && !burglar) change_pwd();      
+  if(pwd_chng && !burglar) change_pwd(); 
+  if(digitalRead(armpin)) armed = true;     
 }
