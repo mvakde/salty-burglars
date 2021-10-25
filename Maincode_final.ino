@@ -43,6 +43,8 @@ volatile bool count_change = false;
 //Setup
 void setup() {
   lcd.begin(16, 2);
+  attachInterrupt(digitalPinToInterrupt(PIRpin), PIRisr, FALLING);
+  attachInterrupt(digitalPinToInterrupt(Firepin), TEMPisr, RISING);
   Timer1.initialize(1000000);//A second long timer
   Timer1.attachInterrupt(TIMERONEisr);
   Timer1.stop();
@@ -169,5 +171,6 @@ void loop() {
   if(burglar && armed) enter_pwd();
   readKeypad(keypad1);
   if(pwd_chng && !burglar) change_pwd(); 
-  if(digitalRead(armpin)) armed = true;     
+  if(digitalRead(armpin) == HIGH) armed = true;
+  Serial.println(digitalRead(2));     
 }
