@@ -141,6 +141,24 @@ void change_pwd(){
   input_string = 0;
   clear_lcd();
   lcd.setCursor(0,0);
+  lcd.print("Enter old pwd   ");
+  entered = false;
+  while(true){
+    if(fire) return;//Fire safety is more important
+    readKeypad(keypad1);
+    lcd.setCursor(0,1);
+    if(input_string > 0) lcd.print(input_string);
+    if(entered && correctpwd == input_string){
+      input_string = 0;
+      clear_lcd();
+      break;
+    }
+    if(entered && correctpwd != input_string){
+      clear_lcd();
+      return;
+    }
+  }
+  lcd.setCursor(0,0);
   lcd.print("Enter new pwd   ");
   entered = false;
   while(true){
@@ -154,6 +172,8 @@ void change_pwd(){
       Serial.println(correctpwd);
       lcd.setCursor(0,0);
       lcd.print("Pwd changed     ");
+      lcd.setCursor(0,1);
+      lcd.print("                ");
       input_string = 0;
       pwd_chng = false;
       break;
@@ -200,7 +220,7 @@ void fire_here(){
 
 void arm_detector(){
   clear_lcd();
-  current_count = timerperiod;
+  current_count = 10;
   lcd.setCursor(0,0);
   lcd.print("Arming in   s   ");
   Timer1.resume();
