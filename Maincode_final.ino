@@ -24,6 +24,7 @@ char keymatrix[3][3] = {
     {'*','0','#'}
 };
 Keypad keypad1 = Keypad( makeKeymap(keymatrix), keypadrows, keypadcols, 3, 3 );
+const int pwd_address = 0;
 
 //global variables
 String input_string = ""; //User entered string
@@ -47,9 +48,9 @@ void setup() {
   Timer1.initialize(1000000);//A second long timer
   Timer1.attachInterrupt(TIMERONEisr);
   Timer1.stop();
-  //Below line is commented cause EEPROM issues
-  //EEPROM.get(0,correctpwd);
+  EEPROM.get(pwd_address,correctpwd);
   Serial.begin(9600);
+  Serial.print(correctpwd);
 }
 
 //ISRs
@@ -77,6 +78,8 @@ void fire_alarm(){
 
 //correctpwd functions
 void enter_pwd() {
+  current_count = 60;
+  input_string = "";
   clear_lcd();
   lcd.setCursor(0,0);
   lcd.print("Time Left:   s  ");
@@ -122,6 +125,7 @@ void enter_pwd() {
 }
 
 void change_pwd(){
+  input_string = "";
   clear_lcd();
   lcd.setCursor(0,0);
   lcd.print("Enter new pwd   ");
@@ -145,6 +149,7 @@ void change_pwd(){
 }
 
 void fire_here(){
+  input_string = "";
   clear_lcd();
   lcd.setCursor(0,0);
   lcd.print("Fire here!!     ");
@@ -167,6 +172,7 @@ void fire_here(){
 
 void arm_detector(){
   clear_lcd();
+  current_count = 60;
   lcd.setCursor(0,0);
   lcd.print("Arming in   s   ");
   Timer1.resume();
