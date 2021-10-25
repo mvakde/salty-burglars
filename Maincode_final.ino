@@ -73,7 +73,6 @@ void burglar_alarm(){
 
 void fire_alarm(){
   tone(buzzerpin,700,500);
-  delay(1000);
 }
 
 //correctpwd functions
@@ -111,7 +110,6 @@ void enter_pwd() {
       clear_lcd();
       lcd.setCursor(0,0);
       lcd.print("All safe :)      ");
-      Serial.println(input_string);
       burglar = false;
       armed = false;
       break;
@@ -149,7 +147,7 @@ void fire_here(){
   lcd.setCursor(0,0);
   lcd.print("Fire here!!     ");
   entered = false;
-  while(true){
+  while(fire){
     fire_alarm();
     if(digitalRead(Firepin) == HIGH){//Fire not detected now
       readKeypad(keypad1);
@@ -157,6 +155,9 @@ void fire_here(){
       if(input_string!="") lcd.print(input_string);
       if(input_string == correctpwd && entered){
         clear_lcd();
+        lcd.setCursor(0,0);
+        lcd.print("All safe :)      ");
+        fire = false;
       }
     }
   }
