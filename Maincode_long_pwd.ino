@@ -17,7 +17,7 @@ byte keypadcols[3] = {16,15,14};
 byte keypadrows[3] = {19,18,17};
 
 //global constants
-const byte timerperiod = 10; //We will sound alarm after these many Seconds
+const byte timerperiod = 60; //We will sound alarm after these many Seconds
 char keymatrix[3][3] = {
     {'1','2','3'},
     {'4','5','6'},
