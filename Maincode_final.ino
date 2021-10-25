@@ -113,7 +113,8 @@ void enter_pwd() {
       lcd.print("All safe :)      ");
       Serial.println(input_string);
       burglar = false;
-      return;
+      armed = false;
+      break;
     }
     if(entered && input_string != correctpwd){
       current_count = 0;
@@ -141,6 +142,52 @@ void change_pwd(){
       break;
     }
   }
+}
+
+void fire_here(){
+  clear_lcd();
+  lcd.setCursor(0,0);
+  lcd.print("Fire here!!     ");
+  entered = false;
+  while(true){
+    fire_alarm();
+    if(digitalRead(Firepin) == HIGH){//Fire not detected now
+      readKeypad(keypad1);
+      lcd.setCursor(0,1);
+      if(input_string!="") lcd.print(input_string);
+      if(input_string == correctpwd && entered){
+        clear_lcd();
+      }
+    }
+  }
+}
+
+void arm_detector(){
+  clear_lcd();
+  lcd.setCursor(0,0);
+  lcd.print("Arming in   s   ");
+  Timer1.resume();
+  while(true){
+    if(current_count > 9){
+      lcd.setCursor(10,0);
+      lcd.print(current_count);
+    }
+    else if(current_count > 0){
+      lcd.setCursor(10,0);
+      lcd.print(" "); 
+      lcd.setCursor(11,0);
+      lcd.print(current_count);
+    }
+    else{
+      Timer1.stop();
+      lcd.setCursor(0,0);
+      lcd.print("Armed!          ");
+      break;
+    }
+  }
+  armed = true;
+  current_count = 60;
+  return;
 }
 
 void clear_lcd(){
@@ -186,6 +233,8 @@ void loop() {
   if(burglar && armed) enter_pwd();
   readKeypad(keypad1);
   if(pwd_chng && !burglar) change_pwd(); 
-  while(fire) fire_alarm();
-  if(digitalRead(armpin) == HIGH){delay(60000); armed = true;}
+  if(fire) fire_here();
+  if(digitalRead(armpin) == HIGH){
+    arm_detector();
+  }
 }
