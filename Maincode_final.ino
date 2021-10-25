@@ -4,7 +4,6 @@
 #include <EEPROM.h>
 #include <TimerOne.h>
 
-
 //Pin allocation
 //const byte LCDpins[6] = {8,9,10,11,12,13};//LCD module for display
 LiquidCrystal lcd(8,9,10,11,12,13);
@@ -29,7 +28,7 @@ Keypad keypad1 = Keypad( makeKeymap(keymatrix), keypadrows, keypadcols, 3, 3 );
 //global variables
 String input_string = ""; //User entered string
 char lastchar = '\0'; //Last character entered by user, default is \0 i.e. no character
-String correctpwd = "";//Correct correctpwd
+String correctpwd = "1234560";//Correct correctpwd
 volatile uint8_t current_count = 60;//Current count of countdown timer in seconds
 bool entered = false;
 bool pwd_chng = false;
@@ -44,11 +43,12 @@ volatile bool count_change = false;
 void setup() {
   lcd.begin(16, 2);
   attachInterrupt(digitalPinToInterrupt(PIRpin), PIRisr, FALLING);
-  attachInterrupt(digitalPinToInterrupt(Firepin), TEMPisr, RISING);
+  attachInterrupt(digitalPinToInterrupt(Firepin), TEMPisr, FALLING);
   Timer1.initialize(1000000);//A second long timer
   Timer1.attachInterrupt(TIMERONEisr);
   Timer1.stop();
-  EEPROM.get(0,correctpwd);
+  //Below line is commented cause EEPROM issues
+  //EEPROM.get(0,correctpwd);
   Serial.begin(9600);
 }
 
@@ -67,18 +67,21 @@ void TIMERONEisr(){
 }
 
 //buzzer functions
-void burglaralarm(){
+void burglar_alarm(){
   tone(buzzerpin,1000);
 }
 
-void firealarm(){
+void fire_alarm(){
   tone(buzzerpin,700,500);
   delay(1000);
 }
 
 //correctpwd functions
 void enter_pwd() {
-  lcd.print("Time Left:   s");
+  clear_lcd();
+  lcd.setCursor(0,0);
+  lcd.print("Time Left:   s  ");
+  Serial.println(correctpwd);
   Timer1.resume();
   while(true){
     readKeypad(keypad1);
@@ -95,55 +98,67 @@ void enter_pwd() {
     else{
       Timer1.detachInterrupt();
       lcd.setCursor(0,0);
-      lcd.print("Game Over!    ");
+      lcd.print("Game Over!      ");
       lcd.setCursor(0,1);
-      lcd.print("              ");
-      while(true) burglaralarm();//Rings the alarm forever
+      lcd.print("                ");
+      while(true) burglar_alarm();//Rings the alarm forever
     }
-    if(input_string != correctpwd && !entered && current_count>0){
+    if(input_string != "" && !entered){
       lcd.setCursor(0,1);
       lcd.print(input_string);
     }
-    if(entered && input_string == correctpwd && current_count>0){
+    if(entered && input_string == correctpwd){
+      clear_lcd();
       lcd.setCursor(0,0);
-      lcd.print("All safe :)    ");
-      lcd.setCursor(0,1);
-      lcd.print("              ");
+      lcd.print("All safe :)      ");
+      Serial.println(input_string);
       burglar = false;
-      break;
+      return;
     }
-    if(entered && input_string != correctpwd && current_count>0){
+    if(entered && input_string != correctpwd){
       current_count = 0;
     }
   }
 }
 
 void change_pwd(){
+  clear_lcd();
   lcd.setCursor(0,0);
-  lcd.print("Enter new pwd ");
+  lcd.print("Enter new pwd   ");
   entered = false;
   while(true){
     readKeypad(keypad1);
     lcd.setCursor(0,1);
-    lcd.print(input_string);
+    if(input_string!="") lcd.print(input_string);
     if(entered){
       correctpwd = input_string;
       EEPROM.put(0,correctpwd);
-      lcd.print("Pwd changed   ");
+      EEPROM.get(0,correctpwd);
+      Serial.println(correctpwd);
+      lcd.setCursor(0,0);
+      lcd.print("Pwd changed     ");
       input_string = "";
       break;
     }
   }
 }
 
+void clear_lcd(){
+  lcd.setCursor(0,0);
+  lcd.print("                ");
+  lcd.setCursor(0,1);
+  lcd.print("                ");
+}
 
 //Keyboard functions
 void clear_string(){
   input_string = "";
+  lcd.setCursor(0,1);
+  lcd.print("                ");
 }
 
 void force_append(char character){
-  input_string.concat(character);
+  input_string = input_string + character;
 }
 
 void readKeypad(Keypad k){
@@ -157,8 +172,8 @@ void readKeypad(Keypad k){
       case '*':
         entered = true;
         break;
-//    case '\0': //Null character, no key was pressed
-//      break; //do nothing 
+      case '\0': //Null character, no key was pressed
+        break; //do nothing 
       default:
         force_append(key);
     }
@@ -171,6 +186,6 @@ void loop() {
   if(burglar && armed) enter_pwd();
   readKeypad(keypad1);
   if(pwd_chng && !burglar) change_pwd(); 
-  if(digitalRead(armpin) == HIGH) armed = true;
-  Serial.println(digitalRead(2));     
+  while(fire) fire_alarm();
+  if(digitalRead(armpin) == HIGH){delay(60000); armed = true;}
 }
