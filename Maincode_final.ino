@@ -83,6 +83,7 @@ void enter_pwd() {
   Serial.println(correctpwd);
   Timer1.resume();
   while(true){
+    if(fire) return;//Fire is a greater danger than pesky thieves
     readKeypad(keypad1);
     if(current_count > 9){
       lcd.setCursor(11,0);
@@ -126,6 +127,7 @@ void change_pwd(){
   lcd.print("Enter new pwd   ");
   entered = false;
   while(true){
+    if(fire) return;//Fire safety is more important
     readKeypad(keypad1);
     lcd.setCursor(0,1);
     if(input_string!="") lcd.print(input_string);
@@ -169,6 +171,7 @@ void arm_detector(){
   lcd.print("Arming in   s   ");
   Timer1.resume();
   while(true){
+    if(fire) return;//Why arm during a fire?
     if(current_count > 9){
       lcd.setCursor(10,0);
       lcd.print(current_count);
