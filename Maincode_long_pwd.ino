@@ -24,20 +24,24 @@ char keymatrix[3][3] = {
     {'*','0','#'}
 };
 Keypad keypad1 = Keypad( makeKeymap(keymatrix), keypadrows, keypadcols, 3, 3 );
-const int pwd_address = 0;
 
 //global variables
 unsigned long int input_string = 1; //User entered string
 char lastchar = '\0'; //Last character entered by user, default is \0 i.e. no character
-unsigned long int correctpwd = 0;//Correct pwd initialized
+unsigned long int correctpwd = 11234;//Correct pwd initialized as '1234'
 volatile uint8_t current_count = timerperiod;//Current count of countdown timer in seconds
 bool entered = false;
 bool pwd_chng = false;
+bool pwd_default = true;
 
 //global state variables
 volatile bool fire = false;
 volatile bool burglar = false;
 volatile bool armed = false;
+
+//EEPROM addresses
+const int pwd_address = 0;
+const int flag_address = pwd_address + sizeof(correctpwd);
 
 //Setup
 void setup() {
@@ -47,7 +51,8 @@ void setup() {
   Timer1.initialize(1000000);//A second long timer
   Timer1.attachInterrupt(TIMERONEisr);
   Timer1.stop();
-  EEPROM.get(pwd_address,correctpwd);//Load the right password
+  EEPROM.get(flag_address,pwd_default);
+  if(!pwd_default) EEPROM.get(pwd_address,correctpwd);//Load the right password
   Serial.begin(9600);
   Serial.println(correctpwd);
 }
@@ -169,6 +174,10 @@ void change_pwd(){
     if(entered){
       correctpwd = input_string;
       EEPROM.put(pwd_address,correctpwd);
+      if(pwd_default){
+        pwd_default = false;
+        EEPROM.put(flag_address,pwd_default); 
+      }
       Serial.println(correctpwd);
       lcd.setCursor(0,0);
       lcd.print("Pwd changed     ");
