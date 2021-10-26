@@ -27,7 +27,7 @@ Keypad keypad1 = Keypad( makeKeymap(keymatrix), keypadrows, keypadcols, 3, 3 );
 const int pwd_address = 0;
 
 //global variables
-unsigned long int input_string = 0; //User entered string
+unsigned long int input_string = 1; //User entered string
 char lastchar = '\0'; //Last character entered by user, default is \0 i.e. no character
 unsigned long int correctpwd = 0;//Correct pwd initialized
 volatile uint8_t current_count = timerperiod;//Current count of countdown timer in seconds
@@ -81,7 +81,7 @@ void enter_pwd() {
   bool reenter = false;
   current_count = timerperiod;
   entered = false;
-  input_string = 0;
+  input_string = 1;
   clear_lcd();
   lcd.setCursor(0,0);
   lcd.print("Time Left:   s  ");
@@ -108,14 +108,14 @@ void enter_pwd() {
       lcd.print("                ");
       while(true) burglar_alarm();//Rings the alarm forever
     }
-    if(input_string > 0 && reenter){
+    if(input_string > 1 && reenter){
       lcd.setCursor(0,1);
       lcd.print("                ");
       reenter = false;
     }
-    if(input_string > 0 && !entered){
+    if(input_string > 1 && !entered){
       lcd.setCursor(0,1);
-      lcd.print(input_string);
+      print_input(input_string);
     }
     if(entered && input_string == correctpwd){
       clear_lcd();
@@ -129,7 +129,7 @@ void enter_pwd() {
       lcd.setCursor(0,1);
       lcd.print("Wrong pwd!      ");
       failure++;
-      input_string = 0;
+      input_string = 1;
       entered = false;
       reenter = true;
     }
@@ -138,7 +138,7 @@ void enter_pwd() {
 }
 
 void change_pwd(){
-  input_string = 0;
+  input_string = 1;
   clear_lcd();
   lcd.setCursor(0,0);
   lcd.print("Enter old pwd   ");
@@ -147,9 +147,9 @@ void change_pwd(){
     if(fire) return;//Fire safety is more important
     readKeypad(keypad1);
     lcd.setCursor(0,1);
-    if(input_string > 0) lcd.print(input_string);
+    if(input_string > 1) print_input(input_string);
     if(entered && correctpwd == input_string){
-      input_string = 0;
+      input_string = 1;
       clear_lcd();
       break;
     }
@@ -165,7 +165,7 @@ void change_pwd(){
     if(fire) return;//Fire safety is more important
     readKeypad(keypad1);
     lcd.setCursor(0,1);
-    if(input_string > 0) lcd.print(input_string);
+    if(input_string > 1) print_input(input_string);
     if(entered){
       correctpwd = input_string;
       EEPROM.put(pwd_address,correctpwd);
@@ -174,7 +174,7 @@ void change_pwd(){
       lcd.print("Pwd changed     ");
       lcd.setCursor(0,1);
       lcd.print("                ");
-      input_string = 0;
+      input_string = 1;
       pwd_chng = false;
       break;
     }
@@ -183,7 +183,7 @@ void change_pwd(){
 
 void fire_here(){
   bool reenter = false;//Passwords can be re-entered any number of times
-  input_string = 0;
+  input_string = 1;
   clear_lcd();
   lcd.setCursor(0,0);
   lcd.print("Fire here!!     ");
@@ -192,14 +192,14 @@ void fire_here(){
     fire_alarm();
     if(digitalRead(Firepin) == HIGH){//Fire not detected now
       readKeypad(keypad1);
-      if(input_string > 0 && reenter){
+      if(input_string > 1 && reenter){
         lcd.setCursor(0,1);
         lcd.print("                ");
         reenter = false;
       }
-      if(input_string > 0){
+      if(input_string > 1){
         lcd.setCursor(0,1);
-        lcd.print(input_string);
+        print_input(input_string);
       }
       if(input_string == correctpwd && entered){
         clear_lcd();
@@ -212,7 +212,7 @@ void fire_here(){
         lcd.print("Re-enter pwd    ");
         entered = false;
         reenter = true;
-        input_string = 0;
+        input_string = 1;
       }
     }
   }
@@ -256,8 +256,13 @@ void clear_lcd(){
 }
 
 //Keyboard functions
+void print_input(unsigned long int input){
+  String s = String(input).substring(1);
+  lcd.print(s);
+}
+
 void clear_string(){
-  input_string = 0;
+  input_string = 1;
   lcd.setCursor(0,1);
   lcd.print("                ");
 }
