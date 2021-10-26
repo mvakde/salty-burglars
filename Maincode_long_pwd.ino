@@ -38,6 +38,7 @@ bool pwd_default = true;
 volatile bool fire = false;
 volatile bool burglar = false;
 volatile bool armed = false;
+volatile bool interruptedT1 = false;
 
 //EEPROM addresses
 const int pwd_address = 0;
@@ -68,6 +69,7 @@ void TEMPisr(){
   
 void TIMERONEisr(){
   current_count--;
+  interruptedT1=true;
 }
 
 //buzzer functions
@@ -191,6 +193,7 @@ void change_pwd(){
 }
 
 void fire_here(){
+  Timer1.resume();
   bool reenter = false;//Passwords can be re-entered any number of times
   input_string = 1;
   clear_lcd();
@@ -198,7 +201,7 @@ void fire_here(){
   lcd.print("Fire here!!     ");
   entered = false;
   while(fire){
-    fire_alarm();
+    if (interruptedT1) {interruptedT1 =false; fire_alarm();}
     if(digitalRead(Firepin) == HIGH){//Fire not detected now
       readKeypad(keypad1);
       if(input_string > 1 && reenter){
@@ -225,6 +228,7 @@ void fire_here(){
       }
     }
   }
+  Timer1.stop();
 }
 
 void arm_detector(){
