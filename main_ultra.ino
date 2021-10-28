@@ -56,7 +56,6 @@ void setup() {
   Timer1.stop();
   EEPROM.get(flag_address,pwd_default);
   if(!pwd_default) EEPROM.get(pwd_address,correctpwd);//Load the right password
-  Serial.begin(9600);
 }
 
 //ISRs
@@ -93,7 +92,6 @@ void enter_pwd() {
   clear_lcd();
   lcd.setCursor(0,0);
   lcd.print("Time Left:   s  ");
-  Serial.println(correctpwd);
   Timer1.resume();
   while(true){
     if(fire) return;//Fire is a greater danger than pesky thieves
@@ -181,7 +179,6 @@ void change_pwd(){
         pwd_default = false;
         EEPROM.put(flag_address,pwd_default); 
       }
-      Serial.println(correctpwd);
       lcd.setCursor(0,0);
       lcd.print("Pwd changed     ");
       lcd.setCursor(0,1);
