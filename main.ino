@@ -290,7 +290,7 @@ void readKeypad(Keypad k){
     switch(key){
       case '#':
         clear_string();
-        if(!burglar) pwd_chng = true;
+        if(!burglar && !fire) pwd_chng = true;
         break;
       case '*':
         entered = true;
@@ -308,7 +308,7 @@ void readKeypad(Keypad k){
 void loop() {
   if(burglar && armed) enter_pwd();
   readKeypad(keypad1);
-  if(pwd_chng && !burglar) change_pwd(); 
+  if(pwd_chng && !burglar && !fire) change_pwd(); 
   if(fire) fire_here();
   if(digitalRead(armpin) == HIGH){
     arm_detector();
